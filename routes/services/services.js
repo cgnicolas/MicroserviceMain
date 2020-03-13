@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const rp = require('request-promise');
+const axios = require('axios');
 let registeredServices = [];
 
 router.get('/', (req, res) => {
@@ -21,20 +22,26 @@ router.post('/register', (req, res) => {
 });
 
 router.post('/invoke', (req, res) => {
-    const { details } = req.body;
-    const { service } = details;
+    const { serviceDetails, payload } = req.body;
+    const { service } = serviceDetails;
     const { name, process } = service;
     const foundService = registeredServices.find(subject => subject.name == name);
-    const foundEndpoint = foundService.procedures.find(subject => subject.name == process);
 
     if(foundService){
+        const foundEndpoint = foundService.procedures.find(subject => subject.name == process);
         if(foundEndpoint){
-            rp(foundEndpoint.options)
+            const options = {
+                ...foundEndpoint.options,
+                data: payload,
+            }
+            axios.request(options)
             .then((response) => {
                 res.setHeader('Content-Type', 'application/json');
-                res.status(200).send(response);
+                res.status(200).send(response.data);
             })
             .catch((err) =>{
+                console.log(err);
+                console.log("Unknown Error")
                 res.status(400).send(err);
             });
         } else {
