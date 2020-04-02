@@ -2,8 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const PORT = process.argv.slice(2)[0];
-
+require('dotenv').config()
+const PORT = process.env.SERVER_PORT;
 const app = express();
 const root = require('./routes/root');
 
