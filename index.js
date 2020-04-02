@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const PORT = process.argv.slice(2)[0];
 
@@ -8,6 +9,7 @@ const root = require('./routes/root');
 
 app.use(morgan('tiny'));
 app.use(bodyParser.json());
+app.use(cors());
 
 app.use('/', root);
 

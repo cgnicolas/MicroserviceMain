@@ -10,11 +10,16 @@ router.get('/', (req, res) => {
 router.post('/register', (req, res) => {
     const { service } = req.body;
     console.log("Determining if service exists already.");
-    if(!registeredServices.find(subject => subject.name == service.name)){
+    const foundIndex = registeredServices.findIndex(subject => subject.name === service.name)
+    if(foundIndex === -1 && service){
         console.log(`No duplicate found. Registering ${service.name}.`);
         registeredServices.push(service);
         const foundService = registeredServices[registeredServices.findIndex(subject => subject.name == service.name)];
         res.status(201).send(foundService);
+    } else if(foundIndex >= 0 && service) {
+        console.log(`Found duplicate @ ${foundIndex}. Updating ${service.name}.`);
+        registeredServices[foundIndex] = service;
+        res.status(201).send(registeredServices[foundIndex]);
     }
     else {
         res.status(400).send("Bad Request");
@@ -22,17 +27,19 @@ router.post('/register', (req, res) => {
 });
 
 router.post('/invoke', (req, res) => {
-    const { serviceDetails, payload } = req.body;
+    const { serviceDetails, data } = req.body;
     const { service } = serviceDetails;
     const { name, process } = service;
     const foundService = registeredServices.find(subject => subject.name == name);
-
     if(foundService){
         const foundEndpoint = foundService.procedures.find(subject => subject.name == process);
+        const path = foundEndpoint.options.path;
         if(foundEndpoint){
+            const newUrl = `http://${foundService.ip}:${foundService.port}${path}`;
             const options = {
                 ...foundEndpoint.options,
-                data: payload,
+                url: newUrl,
+                data
             }
             axios.request(options)
             .then((response) => {
