@@ -26,6 +26,23 @@ router.post('/register', (req, res) => {
     }
 });
 
+router.post('/remove', (req, res) => {
+    const { service } = req.body;
+    const foundService = registeredServices[registeredServices.findIndex(subject => subject.name == service.name)];
+    let newServices = [];
+    if(foundService){
+        registeredServices.map((service) => {
+            if(service.name !== foundService.name){
+                newServices.push(service);
+            }
+        })
+        registeredServices = newServices;
+        res.status(200).send();
+    } else {
+        res.status(404).send();
+    }
+})
+
 router.post('/invoke', (req, res) => {
     const { serviceDetails, data } = req.body;
     const { service } = serviceDetails;
@@ -56,7 +73,7 @@ router.post('/invoke', (req, res) => {
             res.sendStatus(400);
         }
     } else {
-        console.log("Can't find service");
+        console.log("Can't find service", name);
         res.sendStatus(400);
     }
 });
